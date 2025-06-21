@@ -52,7 +52,7 @@ public class AuthController {
             );
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            String token = jwtService.generateToken(userDetails.getUsername());
+            String token = jwtService.generateToken(userDetails);
             return ResponseEntity.ok(Map.of("token", token));
 
         } catch (BadCredentialsException e) {
