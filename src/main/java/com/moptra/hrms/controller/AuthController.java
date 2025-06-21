@@ -1,6 +1,9 @@
 package com.moptra.hrms.controller;
 
 import com.moptra.hrms.model.AuthRequest;
+
+import com.moptra.hrms.model.Users;
+import com.moptra.hrms.service.EmployeeService;
 import com.moptra.hrms.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,22 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private EmployeeService employeeService;
+
+    /*First register the user in the database*/
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Users user){
+        try{
+            employeeService.registerUser(user);
+            return ResponseEntity.ok("User registered successfully");
+        }
+        catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
@@ -35,6 +54,7 @@ public class AuthController {
 
             String token = jwtService.generateToken(userDetails.getUsername());
             return ResponseEntity.ok(Map.of("token", token));
+
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }

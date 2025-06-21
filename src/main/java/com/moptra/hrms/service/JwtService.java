@@ -24,7 +24,7 @@ public class JwtService {
     public String generateToken(String email) {
         return Jwts.builder()
                 .subject(email)
-                .issuedAt(new Date())
+                .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
