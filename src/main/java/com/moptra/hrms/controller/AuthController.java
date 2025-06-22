@@ -2,9 +2,11 @@ package com.moptra.hrms.controller;
 
 import com.moptra.hrms.model.AuthRequest;
 
+import com.moptra.hrms.model.AuthResponse;
 import com.moptra.hrms.model.Users;
 import com.moptra.hrms.service.EmployeeService;
 import com.moptra.hrms.service.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ public class AuthController {
     /*First register the user in the database*/
 
     @PostMapping("/register")
+    @Operation(summary = "Register user details")
     public ResponseEntity<?> register(@RequestBody Users user){
         try{
             employeeService.registerUser(user);
@@ -44,6 +47,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Generate jwt token")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -52,8 +56,8 @@ public class AuthController {
             );
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            String token = jwtService.generateToken(userDetails);
-            return ResponseEntity.ok(Map.of("token", token));
+            AuthResponse authResponse = jwtService.generateToken(userDetails);
+            return ResponseEntity.ok(authResponse);
 
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

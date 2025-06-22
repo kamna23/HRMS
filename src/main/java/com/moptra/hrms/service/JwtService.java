@@ -1,5 +1,6 @@
 package com.moptra.hrms.service;
 
+import com.moptra.hrms.model.AuthResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,19 +28,26 @@ public class JwtService {
         key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList())); // Include roles in token
+    public AuthResponse generateToken(UserDetails userDetails) {
+        long expirationMillis = 1000 * 60 * 30; // 30 minutes
+        Date issuedAt = new Date();
+        Date expiresAt = new Date(issuedAt.getTime() + expirationMillis);
 
-        return Jwts.builder()
+        Map<String, List<String>> claims = new HashMap<>();
+         List<String> roles =userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()); // Include roles in token
+        claims.put("roles",roles);
+
+        String token = Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claims(claims) //  This was missing!
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
+                .issuedAt(issuedAt)
+                .expiration(expiresAt) // 30 min
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
+
+        return new AuthResponse(token,"Bearer",expiresAt,userDetails.getUsername(),roles);
     }
 
     public String extractEmail(String token) {
