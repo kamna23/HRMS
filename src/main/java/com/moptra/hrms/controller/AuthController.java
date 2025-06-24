@@ -1,5 +1,7 @@
 package com.moptra.hrms.controller;
 
+import com.moptra.hrms.exception.resources.AppBadRequestException;
+import com.moptra.hrms.exception.resources.AppUnauthorizedAccessException;
 import com.moptra.hrms.model.AuthRequest;
 
 import com.moptra.hrms.model.AuthResponse;
@@ -42,7 +44,7 @@ public class AuthController {
             return ResponseEntity.ok("User registered successfully");
         }
         catch (Exception ex){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            throw new AppBadRequestException(ex);
         }
     }
 
@@ -59,8 +61,8 @@ public class AuthController {
             AuthResponse authResponse = jwtService.generateToken(userDetails);
             return ResponseEntity.ok(authResponse);
 
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception ex) {
+            throw new AppUnauthorizedAccessException(ex);
         }
     }
 }
